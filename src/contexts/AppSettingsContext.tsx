@@ -56,6 +56,7 @@ const translations = {
     saveSettings: "Save Settings",
     resetDefaults: "Reset to Defaults",
     cancel: "Cancel",
+    apply: "Apply",
     // Todo page
     taskDashboard: "Task Dashboard",
     manageTrackTasks: "Manage and track your tasks efficiently",
@@ -206,7 +207,9 @@ const translations = {
     connectedAs: "Connected as",
     notConnected: "Not connected",
     driveAutoSync: "Auto-syncs every 30 s",
-    clientIdMissing: "Client ID not configured – see GoogleDriveContext.tsx",
+    clientIdLabel: "Your Google Client ID",
+    clientIdHelp: "Don't have one? Get it free at",
+    clientIdMissing: "Enter your Client ID above to enable Google Drive sync.",
     // TodoTable
     colTask: "Task / Mission",
     colStatusType: "Status Type",
@@ -262,6 +265,7 @@ const translations = {
     saveSettings: "שמור הגדרות",
     resetDefaults: "איפוס לברירת מחדל",
     cancel: "ביטול",
+    apply: "החל",
     // Todo page
     taskDashboard: "לוח משימות",
     manageTrackTasks: "נהל ועקוב אחר המשימות שלך",
@@ -411,7 +415,9 @@ const translations = {
     connectedAs: "מחובר בתור",
     notConnected: "לא מחובר",
     driveAutoSync: "מסנכרן אוטומטית כל 30 שניות",
-    clientIdMissing: "Client ID לא מוגדר – ראה GoogleDriveContext.tsx",
+    clientIdLabel: "ה-Client ID של Google שלך",
+    clientIdHelp: "אין לך? קבל בחינם ב-",
+    clientIdMissing: "הזן את ה-Client ID למעלה כדי להפעיל סנכרון Google Drive.",
     // TodoTable
     colTask: "משימה",
     colStatusType: "סוג סטאטוס",

@@ -1,21 +1,18 @@
 /**
  * Google Drive Sync Context
  *
- * SETUP (one-time, by the developer):
- * 1. Go to https://console.cloud.google.com and create a new project.
- * 2. Enable the "Google Drive API" for that project.
- * 3. Go to "APIs & Services" → "Credentials" → "Create Credentials" → "OAuth 2.0 Client ID".
- * 4. Choose "Web application". Add your GitHub Pages URL as an Authorized JavaScript Origin:
- *      https://barpupko.github.io
- *    Also add http://localhost:5173 for local development.
- * 5. Copy the Client ID (looks like: 123456789-xyz.apps.googleusercontent.com)
- * 6. Paste it below as GOOGLE_CLIENT_ID.
+ * Each user enters their own Google OAuth Client ID in Settings → Google Drive Sync.
+ * No developer setup needed — each person sets up their own free Google Cloud project.
  *
- * Each user who visits the site connects THEIR OWN Google account via OAuth.
- * The Client ID just identifies your app — it is safe to be public.
+ * HOW TO GET A CLIENT ID (each user does this once):
+ * 1. Go to https://console.cloud.google.com and create a free project.
+ * 2. Enable the "Google Drive API".
+ * 3. Go to "APIs & Services" → "Credentials" → "Create Credentials" → "OAuth 2.0 Client ID".
+ * 4. Choose "Web application".
+ * 5. Under "Authorized JavaScript origins" add the URL where you run this app,
+ *    e.g. https://barpupko.github.io  and  http://localhost:5173
+ * 6. Copy the Client ID and paste it into Settings → Google Drive Sync.
  */
-
-const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"; // ← Paste your Client ID here
 
 const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 const BACKUP_FILENAME = "MyDashboard-backup.json";
@@ -40,7 +37,9 @@ interface GoogleDriveContextType {
   syncStatus: SyncStatus;
   lastSynced: Date | null;
   userEmail: string | null;
+  clientId: string;
   clientIdMissing: boolean;
+  setClientId: (id: string) => void;
   connect: () => void;
   disconnect: () => void;
   syncNow: () => void;
@@ -170,6 +169,9 @@ export function GoogleDriveProvider({
   const [userEmail, setUserEmail] = useState<string | null>(() =>
     localStorage.getItem("gdrive-user-email"),
   );
+  const [clientId, setClientIdState] = useState<string>(
+    () => localStorage.getItem("gdrive-client-id") ?? "",
+  );
 
   const tokenRef = useRef<string | null>(null);
   const fileIdRef = useRef<string | null>(
@@ -180,7 +182,13 @@ export function GoogleDriveProvider({
   } | null>(null);
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const clientIdMissing = GOOGLE_CLIENT_ID === "YOUR_GOOGLE_CLIENT_ID";
+  const clientIdMissing = clientId.trim() === "";
+
+  const setClientId = useCallback((id: string) => {
+    const trimmed = id.trim();
+    localStorage.setItem("gdrive-client-id", trimmed);
+    setClientIdState(trimmed);
+  }, []);
 
   /* ── perform one sync push ── */
   const performSync = useCallback(async () => {
@@ -264,7 +272,7 @@ export function GoogleDriveProvider({
     const init = () => {
       if (!window.google?.accounts?.oauth2) return;
       tokenClientRef.current = window.google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
+        client_id: clientId,
         scope: DRIVE_SCOPE,
         callback: async (resp) => {
           if (resp.error || !resp.access_token) {
@@ -294,12 +302,12 @@ export function GoogleDriveProvider({
       const script = document.getElementById("gsi-script");
       if (script) script.addEventListener("load", init);
     }
-  }, [clientIdMissing, handleTokenResponse]);
+  }, [clientId, clientIdMissing, handleTokenResponse]);
 
   const connect = useCallback(() => {
     if (clientIdMissing) {
       alert(
-        "Google Client ID is not configured.\n\nOpen src/contexts/GoogleDriveContext.tsx and paste your Client ID into the GOOGLE_CLIENT_ID constant.",
+        "Please enter your Google Client ID in Settings → Google Drive Sync.\n\nGet one free at https://console.cloud.google.com",
       );
       return;
     }
@@ -327,7 +335,9 @@ export function GoogleDriveProvider({
         syncStatus,
         lastSynced,
         userEmail,
+        clientId,
         clientIdMissing,
+        setClientId,
         connect,
         disconnect,
         syncNow,

@@ -58,11 +58,15 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     syncStatus,
     lastSynced,
     userEmail,
+    clientId,
     clientIdMissing,
+    setClientId,
     connect,
     disconnect,
     syncNow,
   } = useGoogleDrive();
+
+  const [localClientId, setLocalClientId] = useState(clientId);
 
   /* local copies so user can cancel without persisting — initialised fresh each mount (dialog re-mounts on open) */
   const [localName, setLocalName] = useState(userName ?? "");
@@ -419,11 +423,40 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 label={t("googleDriveSync")}
               />
 
-              {clientIdMissing && (
-                <p className="text-xs text-amber-600 dark:text-amber-400 mb-3">
-                  {t("clientIdMissing")}
+              {/* Client ID input — always shown so user can set/update it */}
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                  {t("clientIdLabel")}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={localClientId}
+                    onChange={(e) => setLocalClientId(e.target.value)}
+                    onBlur={() => setClientId(localClientId)}
+                    placeholder="123456789-xyz.apps.googleusercontent.com"
+                    className="flex-1 min-w-0 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-xs text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    spellCheck={false}
+                  />
+                  <button
+                    onClick={() => setClientId(localClientId)}
+                    className="shrink-0 px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md transition-colors"
+                  >
+                    {t("apply")}
+                  </button>
+                </div>
+                <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
+                  {t("clientIdHelp")}{" "}
+                  <a
+                    href="https://console.cloud.google.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline"
+                  >
+                    Google Cloud Console →
+                  </a>
                 </p>
-              )}
+              </div>
 
               {isConnected ? (
                 <div className="space-y-3">
