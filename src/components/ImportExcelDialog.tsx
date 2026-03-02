@@ -1,19 +1,31 @@
-import { useState, useRef } from 'react';
-import * as Dialog from '@radix-ui/react-dialog';
-import * as RadioGroup from '@radix-ui/react-radio-group';
-import { X, Upload, FileSpreadsheet, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { importFromExcel } from '../utils/excelExport';
-import type { ImportResult } from '../utils/excelExport';
-import type { WorkDayEntry } from '../types/workHours';
+import { useState, useRef } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import * as RadioGroup from "@radix-ui/react-radio-group";
+import {
+  X,
+  Upload,
+  FileSpreadsheet,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
+import { importFromExcel } from "../utils/excelExport";
+import type { ImportResult } from "../utils/excelExport";
+import type { WorkDayEntry } from "../types/workHours";
+import { useAppSettings } from "../contexts/AppSettingsContext";
 
 interface ImportExcelDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onImport: (entries: WorkDayEntry[], mode: 'merge' | 'replace') => void;
+  onImport: (entries: WorkDayEntry[], mode: "merge" | "replace") => void;
 }
 
-export function ImportExcelDialog({ open, onOpenChange, onImport }: ImportExcelDialogProps) {
-  const [importMode, setImportMode] = useState<'merge' | 'replace'>('merge');
+export function ImportExcelDialog({
+  open,
+  onOpenChange,
+  onImport,
+}: ImportExcelDialogProps) {
+  const { t } = useAppSettings();
+  const [importMode, setImportMode] = useState<"merge" | "replace">("merge");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -35,9 +47,9 @@ export function ImportExcelDialog({ open, onOpenChange, onImport }: ImportExcelD
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const file = e.dataTransfer.files?.[0];
-    if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+    if (file && (file.name.endsWith(".xlsx") || file.name.endsWith(".xls"))) {
       setSelectedFile(file);
       setResult(null);
     }
@@ -45,12 +57,12 @@ export function ImportExcelDialog({ open, onOpenChange, onImport }: ImportExcelD
 
   const handleImport = async () => {
     if (!selectedFile) return;
-    
+
     setIsLoading(true);
     try {
       const importResult = await importFromExcel(selectedFile);
       setResult(importResult);
-      
+
       if (importResult.success && importResult.entries.length > 0) {
         // Don't close yet, show results first
       }
@@ -58,7 +70,7 @@ export function ImportExcelDialog({ open, onOpenChange, onImport }: ImportExcelD
       setResult({
         success: false,
         entries: [],
-        errors: [`Import failed: ${error}`],
+        errors: [`${t("importFailedMsg")}: ${error}`],
         totalImported: 0,
       });
     } finally {
@@ -86,10 +98,10 @@ export function ImportExcelDialog({ open, onOpenChange, onImport }: ImportExcelD
         <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
         <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg">
           <Dialog.Title className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-            Import Excel File
+            {t("importExcelFile")}
           </Dialog.Title>
           <Dialog.Description className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            Import work hours data from an Excel file with Hebrew columns
+            {t("importExcelDesc")}
           </Dialog.Description>
 
           <Dialog.Close asChild>
@@ -104,9 +116,9 @@ export function ImportExcelDialog({ open, onOpenChange, onImport }: ImportExcelD
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
             className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-              selectedFile 
-                ? 'border-green-400 bg-green-50 dark:bg-green-900/20' 
-                : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+              selectedFile
+                ? "border-green-400 bg-green-50 dark:bg-green-900/20"
+                : "border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
             }`}
           >
             <input
@@ -116,20 +128,24 @@ export function ImportExcelDialog({ open, onOpenChange, onImport }: ImportExcelD
               onChange={handleFileSelect}
               className="hidden"
             />
-            
+
             {selectedFile ? (
               <div className="flex flex-col items-center gap-2">
                 <FileSpreadsheet className="h-12 w-12 text-green-600" />
-                <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedFile.name}</p>
-                <p className="text-xs text-gray-500">Click or drag to change file</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  {selectedFile.name}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {t("clickToChangeFile")}
+                </p>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2">
                 <Upload className="h-12 w-12 text-gray-400" />
                 <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  Drop Excel file here or click to browse
+                  {t("dropExcelHere")}
                 </p>
-                <p className="text-xs text-gray-500">Supports .xlsx and .xls files</p>
+                <p className="text-xs text-gray-500">{t("supportsFormats")}</p>
               </div>
             )}
           </div>
@@ -137,11 +153,13 @@ export function ImportExcelDialog({ open, onOpenChange, onImport }: ImportExcelD
           {/* Import Mode Selection */}
           <div className="mt-6">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              Import Mode
+              {t("importModeLabel")}
             </label>
             <RadioGroup.Root
               value={importMode}
-              onValueChange={(value) => setImportMode(value as 'merge' | 'replace')}
+              onValueChange={(value) =>
+                setImportMode(value as "merge" | "replace")
+              }
               className="flex gap-4"
             >
               <div className="flex items-center">
@@ -152,8 +170,11 @@ export function ImportExcelDialog({ open, onOpenChange, onImport }: ImportExcelD
                 >
                   <RadioGroup.Indicator className="flex items-center justify-center w-full h-full relative after:content-[''] after:block after:w-2 after:h-2 after:rounded-full after:bg-white" />
                 </RadioGroup.Item>
-                <label htmlFor="merge" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                  Merge (update existing, add new)
+                <label
+                  htmlFor="merge"
+                  className="ml-2 text-sm text-gray-700 dark:text-gray-300"
+                >
+                  {t("mergeMode")}
                 </label>
               </div>
               <div className="flex items-center">
@@ -164,8 +185,11 @@ export function ImportExcelDialog({ open, onOpenChange, onImport }: ImportExcelD
                 >
                   <RadioGroup.Indicator className="flex items-center justify-center w-full h-full relative after:content-[''] after:block after:w-2 after:h-2 after:rounded-full after:bg-white" />
                 </RadioGroup.Item>
-                <label htmlFor="replace" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                  Replace all data
+                <label
+                  htmlFor="replace"
+                  className="ml-2 text-sm text-gray-700 dark:text-gray-300"
+                >
+                  {t("replaceMode")}
                 </label>
               </div>
             </RadioGroup.Root>
@@ -173,11 +197,13 @@ export function ImportExcelDialog({ open, onOpenChange, onImport }: ImportExcelD
 
           {/* Result Display */}
           {result && (
-            <div className={`mt-6 p-4 rounded-lg ${
-              result.success 
-                ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
-                : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
-            }`}>
+            <div
+              className={`mt-6 p-4 rounded-lg ${
+                result.success
+                  ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
+                  : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+              }`}
+            >
               <div className="flex items-start gap-3">
                 {result.success ? (
                   <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
@@ -188,19 +214,22 @@ export function ImportExcelDialog({ open, onOpenChange, onImport }: ImportExcelD
                   {result.success ? (
                     <>
                       <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                        Ready to import {result.totalImported} entries
+                        {t("importModeLabel")}: {result.totalImported}
                       </p>
                       <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                        Click "Confirm Import" to save the data
+                        {t("clickConfirmImport")}
                       </p>
                     </>
                   ) : (
                     <>
                       <p className="text-sm font-medium text-red-800 dark:text-red-200">
-                        Import failed
+                        {t("importFailedMsg")}
                       </p>
                       {result.errors.map((error, i) => (
-                        <p key={i} className="text-xs text-red-600 dark:text-red-400 mt-1">
+                        <p
+                          key={i}
+                          className="text-xs text-red-600 dark:text-red-400 mt-1"
+                        >
                           {error}
                         </p>
                       ))}
@@ -218,16 +247,16 @@ export function ImportExcelDialog({ open, onOpenChange, onImport }: ImportExcelD
               onClick={handleClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              Cancel
+              {t("cancel")}
             </button>
-            
+
             {result?.success ? (
               <button
                 type="button"
                 onClick={handleConfirmImport}
                 className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
               >
-                Confirm Import ({result.totalImported} entries)
+                {t("confirmImport")} ({result.totalImported})
               </button>
             ) : (
               <button
@@ -236,7 +265,7 @@ export function ImportExcelDialog({ open, onOpenChange, onImport }: ImportExcelD
                 disabled={!selectedFile || isLoading}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors"
               >
-                {isLoading ? 'Processing...' : 'Parse File'}
+                {isLoading ? t("processing") : t("parseFile")}
               </button>
             )}
           </div>

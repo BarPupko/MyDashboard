@@ -1,12 +1,23 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useLocalStorage } from './useLocalStorage';
-import type { WorkDay, WorkDayEntry, WorkSummary } from '../types/workHours';
-import { calculateExitTime, calculateTimeRemaining, getDayName, getDayNameEnglish, isWeekend, getDayWorkHours } from '../types/workHours';
+import { useState, useEffect, useMemo } from "react";
+import { useLocalStorage } from "./useLocalStorage";
+import type { WorkDay, WorkDayEntry, WorkSummary } from "../types/workHours";
+import {
+  calculateExitTime,
+  calculateTimeRemaining,
+  getDayName,
+  getDayNameEnglish,
+  isWeekend,
+  getDayWorkHours,
+} from "../types/workHours";
 
 // Helper to calculate overtime minutes
-function calculateOvertimeMinutes(hoursWorked: string, requiredHours: number, requiredMinutes: number): number {
+function calculateOvertimeMinutes(
+  hoursWorked: string,
+  requiredHours: number,
+  requiredMinutes: number,
+): number {
   if (!hoursWorked) return 0;
-  const [h, m] = hoursWorked.split(':').map(Number);
+  const [h, m] = hoursWorked.split(":").map(Number);
   const workedMinutes = h * 60 + m;
   const requiredTotalMinutes = requiredHours * 60 + requiredMinutes;
   return workedMinutes - requiredTotalMinutes;
@@ -14,29 +25,32 @@ function calculateOvertimeMinutes(hoursWorked: string, requiredHours: number, re
 
 // Helper to calculate hours worked from entry and exit times
 function calculateHoursWorked(entryTime: string, exitTime: string): string {
-  if (!entryTime || !exitTime) return '';
-  const [entryH, entryM] = entryTime.split(':').map(Number);
-  const [exitH, exitM] = exitTime.split(':').map(Number);
-  let diffMinutes = (exitH * 60 + exitM) - (entryH * 60 + entryM);
+  if (!entryTime || !exitTime) return "";
+  const [entryH, entryM] = entryTime.split(":").map(Number);
+  const [exitH, exitM] = exitTime.split(":").map(Number);
+  let diffMinutes = exitH * 60 + exitM - (entryH * 60 + entryM);
   if (diffMinutes < 0) diffMinutes += 24 * 60; // Handle overnight
   const hours = Math.floor(diffMinutes / 60);
   const minutes = diffMinutes % 60;
-  return `${hours}:${minutes.toString().padStart(2, '0')}`;
+  return `${hours}:${minutes.toString().padStart(2, "0")}`;
 }
 
 export function useWorkHours() {
-  const [workDays, setWorkDays] = useLocalStorage<WorkDay[]>('workDays', []);
-  const [workDayEntries, setWorkDayEntries] = useLocalStorage<WorkDayEntry[]>('workDayEntries', []);
-  const [summary, setSummary] = useLocalStorage<WorkSummary>('workSummary', {
+  const [workDays, setWorkDays] = useLocalStorage<WorkDay[]>("workDays", []);
+  const [workDayEntries, setWorkDayEntries] = useLocalStorage<WorkDayEntry[]>(
+    "workDayEntries",
+    [],
+  );
+  const [summary, setSummary] = useLocalStorage<WorkSummary>("workSummary", {
     totalMissingHours: 0,
-    vacationDays: -1.5,
-    sickDays: 30.5,
+    vacationDays: 0,
+    sickDays: 0,
     totalOvertimeHours: 0,
   });
 
-  const [currentEntry, setCurrentEntry] = useState<string>('');
-  const [currentExit, setCurrentExit] = useState<string>('');
-  const [timeRemaining, setTimeRemaining] = useState<string>('');
+  const [currentEntry, setCurrentEntry] = useState<string>("");
+  const [currentExit, setCurrentExit] = useState<string>("");
+  const [timeRemaining, setTimeRemaining] = useState<string>("");
 
   // Update time remaining every second
   useEffect(() => {
@@ -57,7 +71,7 @@ export function useWorkHours() {
   };
 
   // Legacy WorkDay methods (keeping for backward compatibility)
-  const addWorkDay = (workDay: Omit<WorkDay, 'id'>) => {
+  const addWorkDay = (workDay: Omit<WorkDay, "id">) => {
     const newWorkDay: WorkDay = {
       ...workDay,
       id: crypto.randomUUID(),
@@ -67,7 +81,7 @@ export function useWorkHours() {
 
   const updateWorkDay = (id: string, updates: Partial<WorkDay>) => {
     setWorkDays(
-      workDays.map((day) => (day.id === id ? { ...day, ...updates } : day))
+      workDays.map((day) => (day.id === id ? { ...day, ...updates } : day)),
     );
   };
 
@@ -76,7 +90,7 @@ export function useWorkHours() {
   };
 
   // WorkDayEntry methods (new)
-  const addWorkDayEntry = (entry: Omit<WorkDayEntry, 'id'>) => {
+  const addWorkDayEntry = (entry: Omit<WorkDayEntry, "id">) => {
     const newEntry: WorkDayEntry = {
       ...entry,
       id: crypto.randomUUID(),
@@ -86,7 +100,9 @@ export function useWorkHours() {
 
   const updateWorkDayEntry = (id: string, updates: Partial<WorkDayEntry>) => {
     setWorkDayEntries(
-      workDayEntries.map((entry) => (entry.id === id ? { ...entry, ...updates } : entry))
+      workDayEntries.map((entry) =>
+        entry.id === id ? { ...entry, ...updates } : entry,
+      ),
     );
   };
 
@@ -98,15 +114,17 @@ export function useWorkHours() {
     return workDayEntries.find((entry) => entry.date === date);
   };
 
-  const saveOrUpdateWorkDayEntry = (entry: Omit<WorkDayEntry, 'id'> & { id?: string }) => {
-    const existingEntry = entry.id 
-      ? workDayEntries.find(e => e.id === entry.id)
+  const saveOrUpdateWorkDayEntry = (
+    entry: Omit<WorkDayEntry, "id"> & { id?: string },
+  ) => {
+    const existingEntry = entry.id
+      ? workDayEntries.find((e) => e.id === entry.id)
       : getWorkDayEntryByDate(entry.date);
 
     if (existingEntry) {
       updateWorkDayEntry(existingEntry.id, entry);
     } else {
-      addWorkDayEntry(entry as Omit<WorkDayEntry, 'id'>);
+      addWorkDayEntry(entry as Omit<WorkDayEntry, "id">);
     }
   };
 
@@ -115,25 +133,35 @@ export function useWorkHours() {
     date: Date,
     entryTime?: string,
     actualExitTime?: string,
-    options: { isVacation?: boolean; isSick?: boolean; isWorkFromHome?: boolean; notes?: string } = {}
-  ): Omit<WorkDayEntry, 'id'> => {
-    const dateStr = date.toISOString().split('T')[0];
+    options: {
+      isVacation?: boolean;
+      isSick?: boolean;
+      isWorkFromHome?: boolean;
+      notes?: string;
+    } = {},
+  ): Omit<WorkDayEntry, "id"> => {
+    const dateStr = date.toISOString().split("T")[0];
     const dayOfWeekEnglish = getDayNameEnglish(date);
     const dayOfWeekHebrew = getDayName(date);
     const isWeekendDay = isWeekend(date);
-    const { hours: reqHours, minutes: reqMinutes } = getDayWorkHours(dayOfWeekEnglish);
+    const { hours: reqHours, minutes: reqMinutes } =
+      getDayWorkHours(dayOfWeekEnglish);
 
-    let recommendedExitTime = '';
-    let hoursWorked = '';
+    let recommendedExitTime = "";
+    let hoursWorked = "";
     let onTime = false;
     let overtimeMinutes = 0;
 
     if (entryTime && !isWeekendDay && !options.isVacation && !options.isSick) {
       recommendedExitTime = calculateExitTime(entryTime, dayOfWeekEnglish);
-      
+
       if (actualExitTime) {
         hoursWorked = calculateHoursWorked(entryTime, actualExitTime);
-        overtimeMinutes = calculateOvertimeMinutes(hoursWorked, reqHours, reqMinutes);
+        overtimeMinutes = calculateOvertimeMinutes(
+          hoursWorked,
+          reqHours,
+          reqMinutes,
+        );
         onTime = overtimeMinutes >= 0;
       }
     }
@@ -142,18 +170,21 @@ export function useWorkHours() {
       date: dateStr,
       dayOfWeek: getDayNameEnglish(date),
       dayOfWeekHebrew,
-      entryTime: entryTime || '',
+      entryTime: entryTime || "",
       recommendedExitTime,
-      actualExitTime: actualExitTime || '',
+      actualExitTime: actualExitTime || "",
       hoursWorked,
       onTime,
-      timeCalculation: overtimeMinutes !== 0 ? `${overtimeMinutes > 0 ? '+' : ''}${overtimeMinutes}` : '0',
+      timeCalculation:
+        overtimeMinutes !== 0
+          ? `${overtimeMinutes > 0 ? "+" : ""}${overtimeMinutes}`
+          : "0",
       overtimeMinutes,
       isWeekend: isWeekendDay,
       isVacation: options.isVacation || false,
       isSick: options.isSick || false,
       isWorkFromHome: options.isWorkFromHome || false,
-      notes: options.notes || '',
+      notes: options.notes || "",
     };
   };
 
@@ -169,7 +200,7 @@ export function useWorkHours() {
   const getEntriesForWeek = (weekStartDate: Date): WorkDayEntry[] => {
     const weekEnd = new Date(weekStartDate);
     weekEnd.setDate(weekEnd.getDate() + 6);
-    
+
     return workDayEntries.filter((entry) => {
       const entryDate = new Date(entry.date);
       return entryDate >= weekStartDate && entryDate <= weekEnd;
@@ -178,11 +209,18 @@ export function useWorkHours() {
 
   // Calculate summary stats
   const calculatedSummary = useMemo(() => {
-    const totalOvertimeMinutes = workDayEntries.reduce((sum, entry) => sum + (entry.overtimeMinutes || 0), 0);
-    const vacationDaysUsed = workDayEntries.filter(e => e.isVacation).length;
-    const sickDaysUsed = workDayEntries.filter(e => e.isSick).length;
-    const daysOnTime = workDayEntries.filter(e => e.onTime && !e.isWeekend && !e.isVacation && !e.isSick).length;
-    const workDaysTotal = workDayEntries.filter(e => !e.isWeekend && !e.isVacation && !e.isSick && e.entryTime).length;
+    const totalOvertimeMinutes = workDayEntries.reduce(
+      (sum, entry) => sum + (entry.overtimeMinutes || 0),
+      0,
+    );
+    const vacationDaysUsed = workDayEntries.filter((e) => e.isVacation).length;
+    const sickDaysUsed = workDayEntries.filter((e) => e.isSick).length;
+    const daysOnTime = workDayEntries.filter(
+      (e) => e.onTime && !e.isWeekend && !e.isVacation && !e.isSick,
+    ).length;
+    const workDaysTotal = workDayEntries.filter(
+      (e) => !e.isWeekend && !e.isVacation && !e.isSick && e.entryTime,
+    ).length;
 
     return {
       totalOvertimeMinutes,
@@ -191,7 +229,8 @@ export function useWorkHours() {
       sickDaysUsed,
       daysOnTime,
       workDaysTotal,
-      onTimePercentage: workDaysTotal > 0 ? Math.round((daysOnTime / workDaysTotal) * 100) : 0,
+      onTimePercentage:
+        workDaysTotal > 0 ? Math.round((daysOnTime / workDaysTotal) * 100) : 0,
     };
   }, [workDayEntries]);
 
@@ -200,27 +239,30 @@ export function useWorkHours() {
   };
 
   const getTodayWorkDay = (): WorkDay | undefined => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     return workDays.find((day) => day.date === today);
   };
 
   const getTodayWorkDayEntry = (): WorkDayEntry | undefined => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     return workDayEntries.find((entry) => entry.date === today);
   };
 
   // Import entries from Excel (merge or replace)
-  const importWorkDayEntries = (entries: WorkDayEntry[], mode: 'merge' | 'replace' = 'merge') => {
-    if (mode === 'replace') {
+  const importWorkDayEntries = (
+    entries: WorkDayEntry[],
+    mode: "merge" | "replace" = "merge",
+  ) => {
+    if (mode === "replace") {
       setWorkDayEntries(entries);
     } else {
       // Merge: update existing entries, add new ones
-      const existingDates = new Map(workDayEntries.map(e => [e.date, e]));
-      
-      entries.forEach(entry => {
+      const existingDates = new Map(workDayEntries.map((e) => [e.date, e]));
+
+      entries.forEach((entry) => {
         existingDates.set(entry.date, entry);
       });
-      
+
       setWorkDayEntries(Array.from(existingDates.values()));
     }
   };
@@ -237,7 +279,7 @@ export function useWorkHours() {
     updateWorkDay,
     deleteWorkDay,
     getTodayWorkDay,
-    
+
     // New WorkDayEntry API
     workDayEntries,
     addWorkDayEntry,
@@ -252,7 +294,7 @@ export function useWorkHours() {
     calculatedSummary,
     importWorkDayEntries,
     clearAllEntries,
-    
+
     // Common
     summary,
     currentEntry,

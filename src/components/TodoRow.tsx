@@ -1,8 +1,8 @@
-
-import * as Checkbox from '@radix-ui/react-checkbox';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Check, MoreVertical, Edit, Trash2 } from 'lucide-react';
-import type { Todo } from '../types/todo';
+import * as Checkbox from "@radix-ui/react-checkbox";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { Check, MoreVertical, Edit, Trash2 } from "lucide-react";
+import type { Todo } from "../types/todo";
+import { useAppSettings } from "../contexts/AppSettingsContext";
 
 interface TodoRowProps {
   todo: Todo;
@@ -12,34 +12,66 @@ interface TodoRowProps {
 }
 
 export function TodoRow({ todo, onToggle, onEdit, onDelete }: TodoRowProps) {
+  const { t } = useAppSettings();
+
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return t("priorityHigh");
+      case "medium":
+        return t("priorityMedium");
+      case "low":
+        return t("priorityLow");
+      default:
+        return priority;
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "pending":
+        return t("statusPending");
+      case "in-progress":
+        return t("statusInProgress");
+      case "completed":
+        return t("statusCompleted");
+      case "blocked":
+        return t("statusBlocked");
+      default:
+        return status;
+    }
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case "high":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "low":
+        return "bg-blue-100 text-blue-800 border-blue-200";
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'in-progress':
-        return 'bg-blue-100 text-blue-800';
-      case 'blocked':
-        return 'bg-red-100 text-red-800';
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "in-progress":
+        return "bg-blue-100 text-blue-800";
+      case "blocked":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   return (
-    <tr className={`border-b hover:bg-gray-50 dark:hover:bg-gray-800 ${todo.completed ? 'opacity-60' : ''}`}>
+    <tr
+      className={`border-b hover:bg-gray-50 dark:hover:bg-gray-800 ${todo.completed ? "opacity-60" : ""}`}
+    >
       <td className="px-4 py-3">
         <Checkbox.Root
           checked={todo.completed}
@@ -52,15 +84,21 @@ export function TodoRow({ todo, onToggle, onEdit, onDelete }: TodoRowProps) {
         </Checkbox.Root>
       </td>
       <td className="px-4 py-3 font-medium">{todo.title}</td>
-      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{todo.description}</td>
+      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+        {todo.description}
+      </td>
       <td className="px-4 py-3">
-        <span className={`inline-block px-2 py-1 text-xs font-semibold rounded border ${getPriorityColor(todo.priority)}`}>
-          {todo.priority}
+        <span
+          className={`inline-block px-2 py-1 text-xs font-semibold rounded border ${getPriorityColor(todo.priority)}`}
+        >
+          {getPriorityLabel(todo.priority)}
         </span>
       </td>
       <td className="px-4 py-3">
-        <span className={`inline-block px-2 py-1 text-xs font-semibold rounded ${getStatusColor(todo.status)}`}>
-          {todo.status}
+        <span
+          className={`inline-block px-2 py-1 text-xs font-semibold rounded ${getStatusColor(todo.status)}`}
+        >
+          {getStatusLabel(todo.status)}
         </span>
       </td>
       <td className="px-4 py-3">
@@ -70,10 +108,14 @@ export function TodoRow({ todo, onToggle, onEdit, onDelete }: TodoRowProps) {
             style={{ width: `${todo.progress}%` }}
           ></div>
         </div>
-        <span className="text-xs text-gray-600 dark:text-gray-400">{todo.progress}%</span>
+        <span className="text-xs text-gray-600 dark:text-gray-400">
+          {todo.progress}%
+        </span>
       </td>
       <td className="px-4 py-3 text-sm">{todo.category}</td>
-      <td className="px-4 py-3 text-sm">{new Date(todo.dueDate).toLocaleDateString()}</td>
+      <td className="px-4 py-3 text-sm">
+        {new Date(todo.dueDate).toLocaleDateString()}
+      </td>
       <td className="px-4 py-3">
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
@@ -88,14 +130,14 @@ export function TodoRow({ todo, onToggle, onEdit, onDelete }: TodoRowProps) {
                 onSelect={() => onEdit(todo)}
               >
                 <Edit className="h-4 w-4" />
-                Edit
+                {t("editTask")}
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-red-100 dark:hover:bg-red-900 text-red-600 dark:text-red-400 rounded outline-none"
                 onSelect={() => onDelete(todo.id)}
               >
                 <Trash2 className="h-4 w-4" />
-                Delete
+                {t("deleteBtn")}
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
