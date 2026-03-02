@@ -1,0 +1,23 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { TodoApp } from './components/TodoApp';
+import { WorkDashboard } from './components/WorkDashboard';
+import { Navigation } from './components/Navigation';
+import { ThemeProvider } from './components/ThemeProvider';
+
+function App() {
+  return (
+    <ThemeProvider>
+      <BrowserRouter>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+          <Navigation />
+          <Routes>
+            <Route path="/" element={<TodoApp />} />
+            <Route path="/dashboard" element={<WorkDashboard />} />
+          </Routes>
+        </div>
+      </BrowserRouter>
+    </ThemeProvider>
+  );
+}
+
+export default App;
