@@ -8,15 +8,20 @@ import {
   Settings,
   Menu,
   X as XIcon,
+  CloudUpload,
+  CloudOff,
+  Cloud,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import type { KeyboardEvent } from "react";
 import { useAppSettings } from "../contexts/AppSettingsContext";
 import { SettingsDialog } from "./SettingsDialog";
+import { useGoogleDrive } from "../contexts/GoogleDriveContext";
 
 export function Navigation() {
   const location = useLocation();
   const { userName, setUserName, t } = useAppSettings();
+  const { isConnected, syncStatus, syncNow } = useGoogleDrive();
 
   /* ── first-visit prompt ──────────────────────────── */
   const [showPrompt, setShowPrompt] = useState(() => userName === null);
@@ -169,8 +174,32 @@ export function Navigation() {
               ))}
             </div>
 
-            {/* Right: gear + mobile hamburger */}
+            {/* Right: drive status + gear + mobile hamburger */}
             <div className="flex items-center gap-1">
+              {/* Drive sync indicator */}
+              {isConnected && (
+                <button
+                  onClick={syncNow}
+                  title={
+                    syncStatus === "syncing"
+                      ? t("syncing")
+                      : syncStatus === "synced"
+                        ? t("syncedLabel")
+                        : syncStatus === "error"
+                          ? t("syncError")
+                          : t("syncNow")
+                  }
+                  className="p-2 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  {syncStatus === "syncing" ? (
+                    <CloudUpload className="h-4 w-4 text-blue-500 animate-pulse" />
+                  ) : syncStatus === "error" ? (
+                    <CloudOff className="h-4 w-4 text-red-500" />
+                  ) : (
+                    <Cloud className="h-4 w-4 text-green-500" />
+                  )}
+                </button>
+              )}
               <button
                 onClick={() => setSettingsOpen(true)}
                 title={t("settings")}

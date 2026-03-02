@@ -5,21 +5,24 @@ import { BackupManager } from "./components/BackupManager";
 import { Navigation } from "./components/Navigation";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { AppSettingsProvider } from "./contexts/AppSettingsContext";
+import { GoogleDriveProvider } from "./contexts/GoogleDriveContext";
 
 function App() {
   return (
     <ThemeProvider>
       <AppSettingsProvider>
-        <BrowserRouter basename="/MyDashboard">
-          <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <Navigation />
-            <Routes>
-              <Route path="/" element={<TodoApp />} />
-              <Route path="/dashboard" element={<WorkDashboard />} />
-              <Route path="/backups" element={<BackupManager />} />
-            </Routes>
-          </div>
-        </BrowserRouter>
+        <GoogleDriveProvider>
+          <BrowserRouter basename="/MyDashboard">
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+              <Navigation />
+              <Routes>
+                <Route path="/" element={<TodoApp />} />
+                <Route path="/dashboard" element={<WorkDashboard />} />
+                <Route path="/backups" element={<BackupManager />} />
+              </Routes>
+            </div>
+          </BrowserRouter>
+        </GoogleDriveProvider>
       </AppSettingsProvider>
     </ThemeProvider>
   );

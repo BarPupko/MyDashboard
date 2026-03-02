@@ -2,12 +2,24 @@ import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Select from "@radix-ui/react-select";
 import * as Switch from "@radix-ui/react-switch";
-import { X, ChevronDown, Check, Globe, Briefcase, Palette } from "lucide-react";
+import {
+  X,
+  ChevronDown,
+  Check,
+  Globe,
+  Briefcase,
+  Palette,
+  HardDrive,
+  Cloud,
+  CloudUpload,
+  CloudOff,
+} from "lucide-react";
 import { useAppSettings } from "../contexts/AppSettingsContext";
 import type { Language } from "../contexts/AppSettingsContext";
 import { useTheme } from "./ThemeProvider";
 import { useWorkSettings } from "./WorkSettingsDialog";
 import type { WorkHoursSettings } from "./WorkSettingsDialog";
+import { useGoogleDrive } from "../contexts/GoogleDriveContext";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -40,6 +52,17 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     updateSettings: updateWorkSettings,
     defaultSettings,
   } = useWorkSettings();
+
+  const {
+    isConnected,
+    syncStatus,
+    lastSynced,
+    userEmail,
+    clientIdMissing,
+    connect,
+    disconnect,
+    syncNow,
+  } = useGoogleDrive();
 
   /* local copies so user can cancel without persisting — initialised fresh each mount (dialog re-mounts on open) */
   const [localName, setLocalName] = useState(userName ?? "");
@@ -387,6 +410,73 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </Select.Portal>
                 </Select.Root>
               </div>
+            </section>
+
+            {/* ── Google Drive Sync ── */}
+            <section className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <SectionHeader
+                icon={<HardDrive className="h-4 w-4" />}
+                label={t("googleDriveSync")}
+              />
+
+              {clientIdMissing && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mb-3">
+                  {t("clientIdMissing")}
+                </p>
+              )}
+
+              {isConnected ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    {syncStatus === "syncing" ? (
+                      <CloudUpload className="h-4 w-4 text-blue-500 animate-pulse" />
+                    ) : syncStatus === "error" ? (
+                      <CloudOff className="h-4 w-4 text-red-500" />
+                    ) : (
+                      <Cloud className="h-4 w-4 text-green-500" />
+                    )}
+                    <span>
+                      {t("connectedAs")}:{" "}
+                      <span className="font-medium">{userEmail}</span>
+                    </span>
+                  </div>
+
+                  {lastSynced && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {t("lastSynced")}: {lastSynced.toLocaleString()}
+                    </p>
+                  )}
+
+                  <div className="flex gap-2 flex-wrap">
+                    <button
+                      onClick={syncNow}
+                      disabled={syncStatus === "syncing" || clientIdMissing}
+                      className="px-3 py-1.5 text-sm font-medium bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg transition-colors"
+                    >
+                      {syncStatus === "syncing" ? t("syncing") : t("syncNow")}
+                    </button>
+                    <button
+                      onClick={disconnect}
+                      className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg transition-colors"
+                    >
+                      {t("disconnectDrive")}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {t("notConnected")}
+                  </p>
+                  <button
+                    onClick={connect}
+                    disabled={clientIdMissing}
+                    className="px-4 py-2 text-sm font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg transition-colors"
+                  >
+                    {t("connectDrive")}
+                  </button>
+                </div>
+              )}
             </section>
           </div>
 
