@@ -18,4 +18,12 @@ export type SortField = 'dueDate' | 'priority' | 'createdAt' | 'title';
 
 export type SortOrder = 'asc' | 'desc';
 
+export interface DashboardStats {
+  total: number;
+  notStarted: number;
+  inProgress: number;
+  completed: number;
+  blocked: number;
+}
+
 export type { Todo as TodoType };

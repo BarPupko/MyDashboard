@@ -1,4 +1,4 @@
-import React from 'react';
+
 import * as Tabs from '@radix-ui/react-tabs';
 import type { FilterType } from '../types/todo';
 

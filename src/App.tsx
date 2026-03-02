@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { TodoApp } from './components/TodoApp';
 import { WorkDashboard } from './components/WorkDashboard';
+import { BackupManager } from './components/BackupManager';
 import { Navigation } from './components/Navigation';
 import { ThemeProvider } from './components/ThemeProvider';
 
@@ -13,6 +14,7 @@ function App() {
           <Routes>
             <Route path="/" element={<TodoApp />} />
             <Route path="/dashboard" element={<WorkDashboard />} />
+            <Route path="/backups" element={<BackupManager />} />
           </Routes>
         </div>
       </BrowserRouter>

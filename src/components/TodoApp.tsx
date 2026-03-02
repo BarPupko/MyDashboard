@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTodos } from '../hooks/useTodos';
 import { TodoHeader } from './TodoHeader';
 import { StatsCards } from './StatsCards';

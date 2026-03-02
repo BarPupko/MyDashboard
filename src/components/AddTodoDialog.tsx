@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Label from '@radix-ui/react-label';
-import * as Select from '@radix-ui/react-select';
-import { X, ChevronDown } from 'lucide-react';
+import { X } from 'lucide-react';
 import type { Todo } from '../types/todo';
 
 interface AddTodoDialogProps {

@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { Calendar, Coffee, Briefcase, TrendingUp, Play, Pause, CalendarDays, Table, Download, Upload, Database, Settings } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calendar, Coffee, Briefcase, TrendingUp, Play, Pause, CalendarDays, Table, Settings } from 'lucide-react';
 import * as Tabs from '@radix-ui/react-tabs';
 import { useWorkHours } from '../hooks/useWorkHours';
 import { getDayName, getDayNameEnglish, isWeekend, getDayWorkHours, formatTime, calculateExitTime, calculateTimeRemaining } from '../types/workHours';
@@ -9,7 +9,6 @@ import { WorkTable } from './WorkTable';
 import { WorkDayDialog } from './WorkDayDialog';
 import { ImportExcelDialog } from './ImportExcelDialog';
 import { WorkSettingsDialog, useWorkSettings } from './WorkSettingsDialog';
-import { exportToJson, importFromJson } from '../utils/jsonExport';
 
 export function WorkDashboard() {
   const { 
@@ -32,7 +31,6 @@ export function WorkDashboard() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const jsonFileInputRef = useRef<HTMLInputElement>(null);
   const { getWorkHoursConfig, getFormattedWorkHours } = useWorkSettings();
   const workHoursConfig = getWorkHoursConfig();
   
@@ -101,33 +99,6 @@ export function WorkDashboard() {
 
   const handleImport = (entries: WorkDayEntry[], mode: 'merge' | 'replace') => {
     importWorkDayEntries(entries, mode);
-  };
-
-  const handleExportJson = () => {
-    exportToJson(workDayEntries, summary);
-  };
-
-  const handleImportJson = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const result = await importFromJson(file);
-    if (result.success && result.data) {
-      const confirmReplace = confirm(
-        `Found ${result.data.workDayEntries.length} entries from ${result.data.exportDate.split('T')[0]}.\n\nDo you want to REPLACE all current data?\n\nClick OK to replace, Cancel to merge with existing data.`
-      );
-      
-      importWorkDayEntries(result.data.workDayEntries, confirmReplace ? 'replace' : 'merge');
-      updateSummary(result.data.workSummary);
-      alert(`Successfully imported ${result.data.workDayEntries.length} entries!`);
-    } else {
-      alert(`Import failed: ${result.error}`);
-    }
-    
-    // Reset file input
-    if (jsonFileInputRef.current) {
-      jsonFileInputRef.current.value = '';
-    }
   };
 
   const formatDateHebrew = (date: Date): string => {
@@ -424,41 +395,6 @@ export function WorkDashboard() {
           open={settingsOpen}
           onOpenChange={setSettingsOpen}
         />
-
-        {/* Backup & Restore */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Database className="h-5 w-5 text-blue-600" />
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Backup & Restore</h2>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            Export your data to a JSON file to backup or transfer to another computer.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <button
-              onClick={handleExportJson}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-            >
-              <Download className="h-4 w-4" />
-              Export to JSON
-            </button>
-            
-            <label className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors cursor-pointer">
-              <Upload className="h-4 w-4" />
-              Import from JSON
-              <input
-                ref={jsonFileInputRef}
-                type="file"
-                accept=".json"
-                onChange={handleImportJson}
-                className="hidden"
-              />
-            </label>
-          </div>
-          <p className="text-xs text-gray-500 dark:text-gray-500 mt-3">
-            Data is stored locally in your browser. Use these options to backup or move data between computers.
-          </p>
-        </div>
 
         {/* Summary Stats */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">

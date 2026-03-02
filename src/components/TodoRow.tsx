@@ -1,4 +1,4 @@
-import React from 'react';
+
 import * as Checkbox from '@radix-ui/react-checkbox';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { Check, MoreVertical, Edit, Trash2 } from 'lucide-react';

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, CheckSquare, Clock, Moon, Sun } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Clock, Moon, Sun, Database } from 'lucide-react';
 import * as Switch from '@radix-ui/react-switch';
 import { useTheme } from './ThemeProvider';
 
@@ -10,6 +10,7 @@ export function Navigation() {
   const navItems = [
     { path: '/', label: 'Tasks', icon: CheckSquare },
     { path: '/dashboard', label: 'Work Hours', icon: Clock },
+    { path: '/backups', label: 'Backups', icon: Database },
   ];
 
   return (

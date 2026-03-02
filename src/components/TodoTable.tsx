@@ -1,7 +1,5 @@
-import React from 'react';
 import { TodoRow } from './TodoRow';
 import type { Todo } from '../types/todo';
-import { ArrowUpDown } from 'lucide-react';
 
 interface TodoTableProps {
   todos: Todo[];

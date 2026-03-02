@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { LayoutDashboard, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 
 interface StatsCardProps {
