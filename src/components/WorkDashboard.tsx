@@ -25,8 +25,7 @@ import { WorkCalendar } from "./WorkCalendar";
 import { WorkTable } from "./WorkTable";
 import { WorkDayDialog } from "./WorkDayDialog";
 import { ImportExcelDialog } from "./ImportExcelDialog";
-import { WorkSettingsDialog, useWorkSettings } from "./WorkSettingsDialog";
-// WorkSettingsDialog is only used via the nav Settings gear; useWorkSettings is still needed for config
+import { useWorkSettings } from "./WorkSettingsDialog";
 import { useAppSettings } from "../contexts/AppSettingsContext";
 export function WorkDashboard() {
   const {
